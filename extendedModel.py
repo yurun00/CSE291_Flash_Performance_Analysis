@@ -17,6 +17,19 @@ def measures(yTest, pred, metric):
     r2 = 1-sse/sst
     return mae, r2
 
+def plotResults(yTest, pred, maxd):
+    ms = ['bandwidth', 'throughput', 'latency']
+    # Plot the results
+    plt.figure()
+    for i in [0,1,2]:
+        plt.plot(range(len(yTest)), yTest.ix[:, i], color="darkorange", label="real")
+        plt.plot(range(len(pred)), pred[:, i], color="cornflowerblue", label="max_depth=" + str(maxd))
+        plt.xlabel("data point")
+        plt.ylabel("performance")
+        plt.title("Real data vs. Prediction of " + ms[i])
+        plt.legend()
+        plt.savefig(resDir + 'result_' + ms[i] + '.jpg')
+
 def genTrees(xTrain, yTrain, xTest, yTest):
     # Fit regression model
     # For bandwidth
@@ -57,6 +70,8 @@ def genTrees(xTrain, yTrain, xTest, yTest):
     tree.export_graphviz(regr1, out_file = resDir + 'tree_latency.dot', feature_names = xTrain.columns)
     call(['dot', '-Tpng', resDir + 'tree_latency.dot', '-o', resDir + 'tree_latency.png'], shell=True)
 
+    plotResults(yTest, pred, 6)
+
     return metrics
 
 def genTree(xTrain, yTrain, xTest, yTest):
@@ -83,6 +98,8 @@ def genTree(xTrain, yTrain, xTest, yTest):
     tree.export_graphviz(regr, out_file = resDir + 'tree.dot', feature_names = xTrain.columns)
     call(['dot', '-Tpng', resDir + 'tree.dot', '-o', resDir + 'tree.png'], shell=True)
 
+    plotResults(yTest, pred, 6)
+
     return metrics
 
 if __name__ == '__main__':
@@ -104,13 +121,3 @@ if __name__ == '__main__':
     md = json.dumps(metricsData)
     with open(resDir + 'metrics_tree.json', 'w') as f:
         f.write(md)
-
-    # Plot the results
-    '''plt.figure()
-    plt.scatter(range(len(yTest)), yTest.ix[:, 0], color="darkorange", label="data")
-    plt.scatter(range(len(pred)), pred[:, 0], color="cornflowerblue", label="max_depth=2")
-    plt.xlabel("data")
-    plt.ylabel("target")
-    plt.title("Decision Tree Regression")
-    plt.legend()
-    plt.show()'''
